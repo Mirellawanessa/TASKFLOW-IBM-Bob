@@ -177,7 +177,7 @@ O **IBM Bob** foi utilizado como agente de desenvolvimento durante o projeto, au
 
 Certificado de conclusão do desafio **Construindo Seu Primeiro Produto com um Agente de IA**, realizado pela [DIO.me](https://dio.me).
 
-![Certificado DIO](./docs/certificado.pdf)
+![Certificado DIO](./docs/certificado.dio.webp)
 
 ---
 
