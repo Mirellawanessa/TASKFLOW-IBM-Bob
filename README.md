@@ -1,105 +1,206 @@
 # TaskFlow
 
-Aplicativo de gerenciamento de tarefas com assistente de IA integrado, construído com React, TypeScript e Tailwind CSS.
+> Aplicativo fullstack de gerenciamento de tarefas com assistente de IA integrado — desenvolvido como projeto prático para a [DIO.me](https://dio.me) com auxílio do **IBM Bob** como agente de IA durante todo o processo de desenvolvimento.
+
+![TaskFlow Dashboard](./docs/screenshot.png)
+
+---
+
+## 📌 Sobre o Projeto
+
+O **TaskFlow** nasceu de um desafio simples: construir, do zero, um produto de software real utilizando um agente de IA como par de desenvolvimento.
+
+O projeto foi concebido, planejado e implementado integralmente com o suporte do **IBM Bob** — da escolha do stack tecnológico até a escrita de cada componente, hook, rota de API e decisão de arquitetura. O resultado é uma aplicação fullstack funcional, com interface de dashboard moderna, backend com autenticação segura e um assistente de IA conversacional integrado.
+
+### Contexto
+
+Este projeto foi submetido à plataforma **DIO.me** como entrega prática de um bootcamp, demonstrando na prática como um desenvolvedor iniciante pode criar um produto de qualidade profissional utilizando agentes de IA como ferramenta de apoio — não como substituto, mas como acelerador de aprendizado e produtividade.
+
+---
 
 ## ✨ Funcionalidades
 
-- **Criar tarefas** com título, descrição e prioridade (baixa, média, alta)
-- **Marcar tarefas como concluídas** com um clique
-- **Excluir tarefas** individualmente
-- **Filtrar tarefas** por status: Todas, Pendentes e Concluídas
-- **Salvar automaticamente** no navegador via localStorage
-- **Assistente de IA (Flow)** powered by Google Gemini:
-  - Cria tarefas automaticamente a partir de texto livre
-  - Sugere o que fazer primeiro com base na lista atual
-  - Responde perguntas sobre produtividade
-
-## 🛠️ Tecnologias
-
-| Tecnologia | Uso |
+| Funcionalidade | Descrição |
 |---|---|
-| [React 19](https://react.dev/) | Biblioteca de interface |
-| [TypeScript](https://www.typescriptlang.org/) | Tipagem estática |
-| [Vite](https://vite.dev/) | Build tool e servidor de desenvolvimento |
-| [Tailwind CSS v4](https://tailwindcss.com/) | Estilização |
-| [Google Gemini API](https://aistudio.google.com/) | Assistente de IA |
-| [Lucide React](https://lucide.dev/) | Ícones |
+| **Autenticação** | Cadastro e login com senha criptografada (bcrypt) e sessão via JWT |
+| **Tarefas por usuário** | Cada conta possui sua própria lista isolada de tarefas |
+| **Criar tarefas** | Título, descrição opcional e prioridade (baixa, média, alta) |
+| **Marcar como concluída** | Alternância de status com atualização otimista na UI |
+| **Excluir tarefas** | Remoção permanente com sincronização no banco |
+| **Filtrar por status** | Abas Todas / Pendentes / Concluídas com contadores em tempo real |
+| **Busca** | Filtragem por título e descrição sem sair da tela |
+| **Dashboard de estatísticas** | Progresso geral, contadores, gráfico semanal e distribuição por prioridade |
+| **Assistente de IA (Flow)** | Chat com Google Gemini que cria tarefas, sugere próximas ações e responde perguntas de produtividade |
+| **Persistência local** | Fallback automático para localStorage quando o backend está offline |
 
-## 📁 Estrutura do Projeto
+---
+
+## 🛠️ Stack Tecnológico
+
+### Frontend
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| [React](https://react.dev/) | 19 | Biblioteca de interface |
+| [TypeScript](https://www.typescriptlang.org/) | 5.x | Tipagem estática |
+| [Vite](https://vite.dev/) | 8.x | Build tool e dev server |
+| [Tailwind CSS](https://tailwindcss.com/) | 4.x | Estilização utilitária |
+| [Lucide React](https://lucide.dev/) | — | Ícones |
+
+### Backend
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| [Node.js](https://nodejs.org/) | 18+ | Runtime |
+| [Express](https://expressjs.com/) | 4.x | Framework HTTP |
+| [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | — | Banco de dados SQLite |
+| [bcryptjs](https://github.com/dcodeIO/bcrypt.js) | — | Hash de senhas |
+| [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) | — | Autenticação JWT |
+| [tsx](https://github.com/privatenumber/tsx) | — | Execução de TypeScript no Node |
+
+### IA
+| Serviço | Uso |
+|---|---|
+| [Google Gemini API](https://aistudio.google.com/) | Assistente conversacional (Flow) |
+| [IBM Bob](https://www.ibm.com/bob) | Agente de IA utilizado durante o desenvolvimento do projeto |
+
+---
+
+## 🏗️ Arquitetura
 
 ```
-src/
-├── components/
-│   ├── AiAssistant.tsx   # Painel lateral do chat com a IA
-│   ├── FilterBar.tsx     # Abas de filtro com contadores
-│   ├── Header.tsx        # Cabeçalho com progresso e botão da IA
-│   ├── TaskCard.tsx      # Cartão de tarefa individual
-│   ├── TaskForm.tsx      # Formulário de criação de tarefas
-│   └── TaskList.tsx      # Lista de tarefas com estado vazio
-├── hooks/
-│   ├── useAi.ts          # Lógica do chat com a IA
-│   └── useTasks.ts       # Lógica de criação, conclusão e exclusão
-├── services/
-│   ├── gemini.ts         # Comunicação com a API do Google Gemini
-│   └── storage.ts        # Leitura e escrita no localStorage
-├── types/
-│   └── task.ts           # Tipos TypeScript (Task, Priority, Status)
-├── App.tsx               # Componente raiz
-└── main.tsx              # Ponto de entrada
+TaskFlow/
+├── src/                        # Frontend React + TypeScript
+│   ├── components/
+│   │   ├── AuthPage.tsx        # Tela de login e cadastro
+│   │   ├── Sidebar.tsx         # Navegação lateral (dashboard)
+│   │   ├── TopBar.tsx          # Barra superior com busca e perfil
+│   │   ├── TaskForm.tsx        # Formulário de criação de tarefas
+│   │   ├── TaskCard.tsx        # Cartão de tarefa individual
+│   │   ├── TaskList.tsx        # Lista com estado vazio
+│   │   ├── FilterBar.tsx       # Abas de filtro com contadores
+│   │   ├── StatsPanel.tsx      # Painel de estatísticas (coluna direita)
+│   │   └── AiAssistant.tsx     # Chat lateral com o assistente Flow
+│   ├── hooks/
+│   │   ├── useAuth.ts          # Gerenciamento de sessão do usuário
+│   │   ├── useTasks.ts         # CRUD de tarefas + sincronização API
+│   │   └── useAi.ts            # Lógica do chat com a IA
+│   ├── services/
+│   │   ├── api.ts              # Cliente HTTP para o backend
+│   │   ├── gemini.ts           # Integração com a API do Gemini
+│   │   └── storage.ts          # Leitura e escrita no localStorage
+│   ├── types/
+│   │   └── task.ts             # Tipos TypeScript (Task, Priority, Status)
+│   └── App.tsx                 # Componente raiz
+│
+└── server/                     # Backend Node.js + Express
+    └── src/
+        ├── db.ts               # Conexão SQLite e criação das tabelas
+        ├── index.ts            # Entrada do servidor Express
+        ├── middleware/
+        │   └── auth.ts         # Middleware JWT
+        └── routes/
+            ├── auth.ts         # POST /auth/register, POST /auth/login
+            └── tasks.ts        # GET/POST/PATCH/DELETE /tasks
 ```
 
-## 🚀 Como rodar localmente
+### Fluxo de dados
+
+```
+Usuário → AuthPage → useAuth → POST /auth/login → JWT salvo no localStorage
+         ↓
+       Dashboard → useTasks → GET /tasks (Bearer JWT) → SQLite → Lista de tarefas
+         ↓
+       AiAssistant → useAi → Gemini API → resposta em texto ou JSON de tarefas
+```
+
+---
+
+## 🚀 Como Rodar Localmente
 
 ### Pré-requisitos
 
 - [Node.js](https://nodejs.org/) v18 ou superior
-- Conta Google para obter a chave da API do Gemini
+- Conta Google (para obter chave do Gemini — opcional)
 
-### Instalação
+### 1. Clone o repositório
 
 ```bash
-# 1. Clone o repositório
 git clone https://github.com/seu-usuario/taskflow.git
 cd taskflow
+```
 
-# 2. Instale as dependências
+### 2. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+VITE_GEMINI_API_KEY=sua_chave_do_gemini_aqui
+```
+
+> Obtenha sua chave gratuita em [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey).  
+> O app funciona sem a chave — apenas o assistente de IA ficará desativado.
+
+### 3. Instale as dependências
+
+```bash
+# Frontend
 npm install
 
-# 3. Configure a chave da API
-# Crie um arquivo .env na raiz do projeto com o conteúdo abaixo:
-# VITE_GEMINI_API_KEY=sua_chave_aqui
+# Backend
+cd server && npm install && cd ..
+```
 
-# 4. Inicie o servidor de desenvolvimento
+### 4. Inicie os servidores
+
+Abra **dois terminais**:
+
+```bash
+# Terminal 1 — Backend (porta 3001)
+cd server
+npm run dev
+
+# Terminal 2 — Frontend (porta 5173)
 npm run dev
 ```
 
-Acesse `http://localhost:5173` no navegador.
+Acesse **http://localhost:5173**, crie sua conta e comece a usar.
 
-### Obter a chave da API do Gemini
+---
 
-1. Acesse [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
-2. Faça login com sua conta Google
-3. Clique em **"Create API Key"**
-4. Copie a chave e cole no arquivo `.env`
+## 🔌 Endpoints da API
 
-> O app funciona normalmente sem a chave — o assistente de IA ficará desativado até a chave ser configurada.
+### Autenticação
 
-## 📦 Scripts disponíveis
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/auth/register` | Criar nova conta |
+| `POST` | `/auth/login` | Autenticar usuário existente |
 
-```bash
-npm run dev      # Inicia o servidor de desenvolvimento
-npm run build    # Gera a build de produção na pasta dist/
-npm run preview  # Visualiza a build de produção localmente
-```
+### Tarefas *(requer `Authorization: Bearer <token>`)*
 
-## 🔒 Variáveis de Ambiente
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/tasks` | Listar tarefas do usuário |
+| `POST` | `/tasks` | Criar nova tarefa |
+| `PATCH` | `/tasks/:id` | Atualizar status da tarefa |
+| `DELETE` | `/tasks/:id` | Excluir tarefa |
 
-| Variável | Descrição |
-|---|---|
-| `VITE_GEMINI_API_KEY` | Chave da API do Google Gemini para o assistente de IA |
+---
 
-> ⚠️ Nunca compartilhe o arquivo `.env` nem faça commit dele. Ele já está no `.gitignore`.
+## 🤖 IBM Bob — Parceiro de Desenvolvimento
+
+Este projeto foi construído em parceria com o **IBM Bob**, um agente de IA assistente de desenvolvimento da IBM. O Bob participou ativamente de todas as etapas:
+
+- **Planejamento** — definição de stack, estrutura de pastas e etapas de desenvolvimento
+- **Implementação** — escrita de todos os componentes React, hooks, serviços e rotas de API
+- **Decisões de arquitetura** — escolha de padrões como atualização otimista de UI, fallback para localStorage e separação de responsabilidades entre camadas
+- **Resolução de problemas** — diagnóstico e correção de erros em tempo real durante o desenvolvimento
+- **Documentação** — geração deste README
+
+> _"Utilizei o IBM Bob como um par de programação sênior — ele não escreveu o código por mim, mas me guiou em cada decisão, explicou o porquê de cada escolha e me ajudou a entender os conceitos enquanto construíamos juntos."_
+> — **Mirella Morais**
+
+---
 
 ## 📄 Licença
 
-MIT © TaskFlow
+MIT © 2025 Mirella Morais

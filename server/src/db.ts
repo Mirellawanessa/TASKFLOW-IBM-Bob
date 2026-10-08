@@ -2,9 +2,14 @@
 
 import Database from 'better-sqlite3'
 import path from 'path'
+import fs from 'fs'
 
 // O arquivo do banco fica em server/data/taskflow.db
-const DB_PATH = path.join(__dirname, '..', 'data', 'taskflow.db')
+const DATA_DIR = path.join(__dirname, '..', 'data')
+const DB_PATH  = path.join(DATA_DIR, 'taskflow.db')
+
+// Garante que a pasta data/ existe antes de abrir o banco
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
 
 const db = new Database(DB_PATH)
 
