@@ -1,5 +1,4 @@
-// Barra de filtros com três abas: Todas, Pendentes e Concluídas.
-// Mostra a contagem de tarefas em cada categoria.
+// Barra de filtros — estilo monocromático com abas e contadores
 
 import type { FilterOption } from '../types/task'
 
@@ -10,8 +9,8 @@ interface FilterBarProps {
 }
 
 const filters: { value: FilterOption; label: string }[] = [
-  { value: 'all',       label: 'Todas'     },
-  { value: 'pending',   label: 'Pendentes' },
+  { value: 'all',       label: 'Todas'      },
+  { value: 'pending',   label: 'Pendentes'  },
   { value: 'completed', label: 'Concluídas' },
 ]
 
@@ -24,14 +23,14 @@ export function FilterBar({ activeFilter, counts, onFilterChange }: FilterBarPro
           onClick={() => onFilterChange(f.value)}
           className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-sm font-medium transition-all cursor-pointer ${
             activeFilter === f.value
-              ? 'bg-white text-indigo-700 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
           }`}
         >
           {f.label}
           <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
             activeFilter === f.value
-              ? 'bg-indigo-100 text-indigo-600'
+              ? 'bg-gray-900 text-white'
               : 'bg-gray-200 text-gray-500'
           }`}>
             {counts[f.value]}

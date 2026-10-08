@@ -1,85 +1,98 @@
-// App.tsx — componente raiz que monta toda a aplicação.
-// Conecta todos os hooks e componentes que criamos.
+// App.tsx — raiz da aplicação com autenticação e dashboard
 
 import { useState } from 'react'
 import './index.css'
+import { useAuth } from './hooks/useAuth'
 import { useTasks } from './hooks/useTasks'
 import { useAi } from './hooks/useAi'
-import { Header } from './components/Header'
+import { AuthPage } from './components/AuthPage'
+import { Sidebar } from './components/Sidebar'
+import { TopBar } from './components/TopBar'
 import { TaskForm } from './components/TaskForm'
 import { TaskList } from './components/TaskList'
 import { FilterBar } from './components/FilterBar'
+import { StatsPanel } from './components/StatsPanel'
 import { AiAssistant } from './components/AiAssistant'
 
 function App() {
-  const [isAiOpen, setIsAiOpen] = useState(false)
+  const { user, isLoading: authLoading, error: authError, login, register, logout, clearError } = useAuth()
+  const [isAiOpen, setIsAiOpen]       = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const {
-    tasks,
-    filteredTasks,
-    filter,
-    setFilter,
-    counts,
-    addTask,
-    toggleTask,
-    deleteTask,
-    addMultipleTasks,
-  } = useTasks()
+    tasks, filteredTasks, filter, setFilter, counts,
+    addTask, toggleTask, deleteTask, addMultipleTasks,
+  } = useTasks(!!user)
 
-  // Quando a IA retornar um JSON com tarefas, parseia e adiciona à lista
+  // Filtra também pela busca
+  const visibleTasks = searchQuery.trim()
+    ? filteredTasks.filter(t =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : filteredTasks
+
   function handleAiTasksCreated(rawJson: string) {
     try {
       const parsed = JSON.parse(rawJson) as {
         tasks: { title: string; description: string; priority: 'low' | 'medium' | 'high' }[]
       }
-      if (Array.isArray(parsed.tasks)) {
-        addMultipleTasks(parsed.tasks)
-      }
-    } catch {
-      // Se o JSON vier malformado, ignora silenciosamente
-    }
+      if (Array.isArray(parsed.tasks)) addMultipleTasks(parsed.tasks)
+    } catch { /* ignora JSON malformado */ }
   }
 
-  const { messages, isLoading, sendMessage } = useAi(tasks, handleAiTasksCreated)
+  const { messages, isLoading: aiLoading, sendMessage } = useAi(tasks, handleAiTasksCreated)
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Cabeçalho fixo */}
-      <Header
-        totalTasks={counts.all}
-        completedTasks={counts.completed}
-        onOpenAi={() => setIsAiOpen(true)}
+  // Usuário não logado → tela de autenticação
+  if (!user) {
+    return (
+      <AuthPage
+        onLogin={login}
+        onRegister={register}
+        isLoading={authLoading}
+        error={authError}
+        onClearError={clearError}
       />
+    )
+  }
 
-      {/* Conteúdo principal */}
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        {/* Formulário de criação */}
-        <TaskForm onAddTask={addTask} />
+  // Usuário logado → dashboard
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar onOpenAi={() => setIsAiOpen(true)} onLogout={logout} />
 
-        {/* Filtros — só aparecem se houver tarefas */}
-        {counts.all > 0 && (
-          <FilterBar
-            activeFilter={filter}
-            counts={counts}
-            onFilterChange={setFilter}
+      <div className="flex-1 ml-16 flex gap-6 p-6 min-h-screen">
+        {/* Coluna central */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopBar
+            userName={user.name}
+            userEmail={user.email}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
           />
-        )}
 
-        {/* Lista de tarefas */}
-        <TaskList
-          tasks={filteredTasks}
-          filter={filter}
-          onToggle={toggleTask}
-          onDelete={deleteTask}
-        />
-      </main>
+          <TaskForm onAddTask={addTask} />
 
-      {/* Painel lateral do assistente de IA */}
+          {counts.all > 0 && (
+            <div className="mt-4">
+              <FilterBar activeFilter={filter} counts={counts} onFilterChange={setFilter} />
+            </div>
+          )}
+
+          <div className="mt-4 flex-1">
+            <TaskList tasks={visibleTasks} filter={filter} onToggle={toggleTask} onDelete={deleteTask} />
+          </div>
+        </div>
+
+        {/* Coluna de estatísticas */}
+        <StatsPanel tasks={tasks} userName={user.name} />
+      </div>
+
       <AiAssistant
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
         messages={messages}
-        isLoading={isLoading}
+        isLoading={aiLoading}
         onSend={sendMessage}
       />
     </div>

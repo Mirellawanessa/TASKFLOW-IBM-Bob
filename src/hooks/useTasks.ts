@@ -1,85 +1,131 @@
-// Um "hook" em React é uma função especial que guarda estado e lógica.
-// O useTasks centraliza TUDO relacionado às tarefas:
-// criar, concluir, excluir e filtrar.
+// Hook de tarefas — sincroniza com a API quando o usuário está logado,
+// e cai para localStorage quando offline ou sem backend.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { Task, Priority, FilterOption } from '../types/task'
 import { loadTasks, saveTasks } from '../services/storage'
+import {
+  apiGetTasks, apiCreateTask, apiUpdateTaskStatus, apiDeleteTask,
+  type ApiTask,
+} from '../services/api'
 
-export function useTasks() {
-  // Estado principal: a lista de tarefas
-  const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
+// Converte o formato da API para o formato interno do app
+function fromApi(t: ApiTask): Task {
+  return {
+    id:          t.id,
+    title:       t.title,
+    description: t.description,
+    priority:    t.priority,
+    status:      t.status,
+    createdAt:   t.created_at,
+  }
+}
 
-  // Estado do filtro ativo (todas / pendentes / concluídas)
+export function useTasks(isAuthenticated: boolean) {
+  const [tasks, setTasks]   = useState<Task[]>(() => loadTasks())
   const [filter, setFilter] = useState<FilterOption>('all')
+  const [synced, setSynced] = useState(false)
 
-  // Sempre que a lista mudar, salva automaticamente no localStorage
+  // Ao logar, carrega as tarefas do servidor
+  const syncFromServer = useCallback(async () => {
+    if (!isAuthenticated) return
+    try {
+      const serverTasks = await apiGetTasks()
+      const mapped = serverTasks.map(fromApi)
+      setTasks(mapped)
+      saveTasks(mapped)
+      setSynced(true)
+    } catch {
+      // Se o servidor estiver fora, usa o localStorage como fallback
+      setSynced(true)
+    }
+  }, [isAuthenticated])
+
   useEffect(() => {
-    saveTasks(tasks)
-  }, [tasks])
+    if (isAuthenticated) {
+      setSynced(false)
+      syncFromServer()
+    } else {
+      // Ao deslogar, limpa as tarefas da memória
+      setTasks([])
+      setSynced(false)
+    }
+  }, [isAuthenticated, syncFromServer])
 
-  // Cria uma nova tarefa e adiciona ao topo da lista
-  function addTask(title: string, description: string, priority: Priority): void {
+  // Salva localmente sempre que a lista muda (backup offline)
+  useEffect(() => {
+    if (synced) saveTasks(tasks)
+  }, [tasks, synced])
+
+  async function addTask(title: string, description: string, priority: Priority): Promise<void> {
     const newTask: Task = {
-      id: Date.now().toString(),
-      title: title.trim(),
+      id:          Date.now().toString(),
+      title:       title.trim(),
       description: description.trim(),
       priority,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
+      status:      'pending',
+      createdAt:   new Date().toISOString(),
     }
+    // Otimista: adiciona na tela primeiro
     setTasks(prev => [newTask, ...prev])
+    if (isAuthenticated) {
+      try {
+        await apiCreateTask({
+          id: newTask.id, title: newTask.title, description: newTask.description,
+          priority: newTask.priority, status: newTask.status, createdAt: newTask.createdAt,
+        })
+      } catch { /* mantém local se falhar */ }
+    }
   }
 
-  // Alterna o status da tarefa: pendente ↔ concluída
-  function toggleTask(id: string): void {
-    setTasks(prev =>
-      prev.map(task =>
-        task.id === id
-          ? { ...task, status: task.status === 'pending' ? 'completed' : 'pending' }
-          : task
-      )
-    )
+  async function toggleTask(id: string): Promise<void> {
+    const task = tasks.find(t => t.id === id)
+    if (!task) return
+    const newStatus = task.status === 'pending' ? 'completed' : 'pending'
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t))
+    if (isAuthenticated) {
+      try { await apiUpdateTaskStatus(id, newStatus) } catch { /* mantém local */ }
+    }
   }
 
-  // Remove uma tarefa permanentemente
-  function deleteTask(id: string): void {
-    setTasks(prev => prev.filter(task => task.id !== id))
+  async function deleteTask(id: string): Promise<void> {
+    setTasks(prev => prev.filter(t => t.id !== id))
+    if (isAuthenticated) {
+      try { await apiDeleteTask(id) } catch { /* mantém local */ }
+    }
   }
 
-  // Adiciona múltiplas tarefas de uma vez (usado pelo assistente de IA)
   function addMultipleTasks(newTasks: Omit<Task, 'id' | 'createdAt' | 'status'>[]): void {
     const tasksToAdd: Task[] = newTasks.map(t => ({
       ...t,
-      id: Date.now().toString() + Math.random().toString(36).slice(2),
-      status: 'pending',
+      id:        Date.now().toString() + Math.random().toString(36).slice(2),
+      status:    'pending',
       createdAt: new Date().toISOString(),
     }))
     setTasks(prev => [...tasksToAdd, ...prev])
+    if (isAuthenticated) {
+      tasksToAdd.forEach(task => {
+        apiCreateTask({
+          id: task.id, title: task.title, description: task.description,
+          priority: task.priority, status: task.status, createdAt: task.createdAt,
+        }).catch(() => {})
+      })
+    }
   }
 
-  // Retorna apenas as tarefas que correspondem ao filtro ativo
   const filteredTasks = tasks.filter(task => {
     if (filter === 'all') return true
     return task.status === filter
   })
 
-  // Contadores para exibir nos botões de filtro
   const counts = {
-    all: tasks.length,
-    pending: tasks.filter(t => t.status === 'pending').length,
+    all:       tasks.length,
+    pending:   tasks.filter(t => t.status === 'pending').length,
     completed: tasks.filter(t => t.status === 'completed').length,
   }
 
   return {
-    tasks,
-    filteredTasks,
-    filter,
-    setFilter,
-    counts,
-    addTask,
-    toggleTask,
-    deleteTask,
-    addMultipleTasks,
+    tasks, filteredTasks, filter, setFilter, counts,
+    addTask, toggleTask, deleteTask, addMultipleTasks,
   }
 }
