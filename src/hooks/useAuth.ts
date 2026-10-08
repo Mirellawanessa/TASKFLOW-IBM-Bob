@@ -56,13 +56,9 @@ export function useAuth() {
     }
   }
 
-  function logout() {
-    setUser(null)
-  }
+  function logout() { setUser(null) }
+  function clearError() { setError(null) }
+  function updateUser(u: ApiUser) { setUser(u) }
 
-  function clearError() {
-    setError(null)
-  }
-
-  return { user, isLoading, error, login, register, logout, clearError }
+  return { user, isLoading, error, login, register, logout, clearError, updateUser }
 }

@@ -61,7 +61,6 @@ export function useAi(tasks: Task[], onTasksCreated: (rawJson: string) => void) 
         ])
       }
     } catch (err) {
-      const isKeyMissing = err instanceof Error && err.message === 'API_KEY_MISSING'
       const errMsg = err instanceof Error ? err.message : String(err)
       setMessages(prev => [
         ...prev,
@@ -69,9 +68,7 @@ export function useAi(tasks: Task[], onTasksCreated: (rawJson: string) => void) 
           id: Date.now().toString(),
           role: 'assistant',
           isError: true,
-          text: isKeyMissing
-            ? '⚠️ Chave da API não configurada. Adicione sua chave do Gemini no arquivo `.env` para usar o assistente.'
-            : `❌ Erro ao contatar a IA: ${errMsg}`,
+          text: `❌ Erro ao contatar a IA: ${errMsg}`,
         },
       ])
     } finally {

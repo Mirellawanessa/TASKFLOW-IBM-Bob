@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 import type { Task, Priority, FilterOption } from '../types/task'
 import { loadTasks, saveTasks } from '../services/storage'
 import {
-  apiGetTasks, apiCreateTask, apiUpdateTaskStatus, apiDeleteTask,
+  apiGetTasks, apiCreateTask, apiUpdateTask, apiDeleteTask,
   type ApiTask,
 } from '../services/api'
 
@@ -84,7 +84,7 @@ export function useTasks(isAuthenticated: boolean) {
     const newStatus = task.status === 'pending' ? 'completed' : 'pending'
     setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t))
     if (isAuthenticated) {
-      try { await apiUpdateTaskStatus(id, newStatus) } catch { /* mantém local */ }
+      try { await apiUpdateTask(id, newStatus) } catch { /* mantém local */ }
     }
   }
 

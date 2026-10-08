@@ -1,0 +1,17 @@
+# Render — configuração do backend (Web Service)
+# Cole este conteúdo ao criar o serviço no Render
+
+services:
+  - type: web
+    name: taskflow-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false   # defina manualmente no painel do Render
