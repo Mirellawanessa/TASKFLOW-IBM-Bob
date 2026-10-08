@@ -175,6 +175,7 @@ O **IBM Bob** foi utilizado como agente de desenvolvimento durante o projeto, au
 
 ---
 
-## 📄 Licença
+### 🤝 Connect with me
 
-MIT © 2025 **Mirella Morais**
+[![LinkedIn](https://img.shields.io/badge/in/mirellawanessa-fff?style=flat&logo=linkedin&logoColor=FFFFFF&labelColor=8b7bdf)](https://www.linkedin.com/in/mirellawanessa/)  
+[![Instagram](https://img.shields.io/badge/@myfilearchive-fff?style=flat&logo=instagram&logoColor=FFFFFF&labelColor=8b7bdf)](https://www.instagram.com/myfilearchive)
