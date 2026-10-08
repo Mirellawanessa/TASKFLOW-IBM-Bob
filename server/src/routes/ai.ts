@@ -7,12 +7,13 @@ import { authMiddleware } from '../middleware/auth'
 const router = Router()
 router.use(authMiddleware)
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY ?? ''
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_KEY}`
-
 // POST /ai/chat — repassa a requisição para o Gemini e retorna a resposta
 router.post('/chat', async (req: Request, res: Response): Promise<void> => {
-  if (!GEMINI_KEY) {
+  // Lido aqui para garantir que o dotenv já foi carregado
+  const GEMINI_KEY = process.env.GEMINI_API_KEY ?? ''
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_KEY}`
+
+  if (!GEMINI_KEY || GEMINI_KEY === 'placeholder') {
     res.status(503).json({ error: 'Serviço de IA não configurado no servidor.' })
     return
   }

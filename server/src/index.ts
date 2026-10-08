@@ -1,10 +1,14 @@
 // Ponto de entrada do servidor Express
 
-import 'dotenv/config'
+import path from 'path'
+import dotenv from 'dotenv'
+import fs from 'fs'
+
+// Carrega o .env com caminho absoluto antes de qualquer outro import
+dotenv.config({ path: path.join(__dirname, '..', '.env') })
+
 import express from 'express'
 import cors from 'cors'
-import path from 'path'
-import fs from 'fs'
 import authRoutes     from './routes/auth'
 import taskRoutes     from './routes/tasks'
 import profileRoutes  from './routes/profile'
@@ -21,10 +25,8 @@ const PORT = process.env.PORT ?? 3001
 app.use(cors({ origin: '*', credentials: true }))
 app.use(express.json({ limit: '10mb' }))
 
-// Serve avatares como arquivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, '..', 'data', 'uploads')))
 
-// Rotas da API
 app.use('/auth',     authRoutes)
 app.use('/tasks',    taskRoutes)
 app.use('/profile',  profileRoutes)
@@ -35,7 +37,9 @@ app.use('/ai',       aiRoutes)
 app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }))
 
 app.listen(PORT, () => {
+  const key = process.env.GEMINI_API_KEY ?? ''
+  const keyStatus = (!key || key === 'placeholder') ? '⚠️  sem chave — edite server/.env' : '✅ configurada'
   console.log(`\n🚀 TaskFlow API rodando em http://localhost:${PORT}`)
-  console.log(`   Gemini IA: ${process.env.GEMINI_API_KEY ? '✅ configurada' : '⚠️  sem chave (defina GEMINI_API_KEY)'}`)
+  console.log(`   Gemini IA: ${keyStatus}`)
   console.log(`   Health:    http://localhost:${PORT}/health\n`)
 })
