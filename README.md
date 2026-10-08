@@ -1,9 +1,10 @@
 # TaskFlow
 
-> Aplicativo fullstack de gerenciamento de tarefas com assistente de IA integrado — desenvolvido como projeto prático para a [DIO.me](https://dio.me) com auxílio do **IBM Bob** como agente de IA durante todo o processo de desenvolvimento.
-
-![TaskFlow Dashboard](./docs/screenshot.png)
-
+<p align="center">
+  <img src="./docs/logo_bob.png" alt="IBM Bob" height="70">
+  &nbsp;&nbsp;&nbsp;
+  <img src="./docs/logo_digital-innovation-one.png" alt="DIO" height="70">
+</p>
 ---
 
 ## 📌 Sobre o Projeto
