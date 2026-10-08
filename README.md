@@ -1,10 +1,11 @@
 # TaskFlow
 
-<p align="center">
-  <img src="./docs/logo_bob.png" alt="IBM Bob" height="60">
-  &nbsp;&nbsp;&nbsp;
-  <img src="./docs/logo_digital-innovation-one.png" alt="DIO" height="60">
+<p>
+  <img src="./docs/logo_bob.png" alt="IBM Bob" height="60" align="left">
+  <img src="./docs/logo_digital-innovation-one.png" alt="DIO" height="60" align="left">
 </p>
+
+<br clear="both">
 
 ---
 
